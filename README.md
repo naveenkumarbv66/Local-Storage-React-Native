@@ -153,10 +153,31 @@ The SQLite CRUD wrapper lives at `storage/sQLiteRNStorage/index.ts` and provides
 
 Global instance: `sqliteDB` (pre-configured for 'users' table)
 
-Notes:
-- Strings, numbers, and booleans are stored as strings internally. Arrays are stored as JSON with a small wrapper to distinguish them on read.
-- `get*` methods coerce values back to the appropriate type; if the stored type doesn't match, they return `null`.
-- SQLite operations are synchronous but wrapped in Promises for consistency.
+### SQLite Features:
+- **Generic CRUD operations**: Create, Read, Update, Delete with type safety
+- **Automatic table creation**: Tables are created automatically on first use
+- **Data serialization**: JSON objects and arrays are automatically serialized/deserialized
+- **Type safety**: Full TypeScript support with generic types
+- **Error handling**: Graceful error handling with runtime availability checks
+- **Expo Go compatibility**: Shows helpful error messages when not available
+
+### SQLite Table Schema:
+The default 'users' table includes:
+- `id` (INTEGER PRIMARY KEY AUTOINCREMENT)
+- `name` (TEXT NOT NULL)
+- `age` (INTEGER)
+- `address` (TEXT)
+- `isMarried` (INTEGER DEFAULT 0)
+- `aboutHim` (TEXT) - JSON serialized
+- `hisFamily` (TEXT) - JSON serialized array
+- `createdAt` (DATETIME DEFAULT CURRENT_TIMESTAMP)
+- `updatedAt` (DATETIME DEFAULT CURRENT_TIMESTAMP)
+
+### SQLite API Details:
+- Uses `expo-sqlite` with synchronous operations (`openDatabaseSync`, `runSync`, `getAllSync`)
+- Operations are wrapped in Promises for async/await compatibility
+- Returns proper TypeScript types with automatic JSON parsing
+- Boolean values are stored as integers (0/1) and converted back to booleans
 
 ## Usage Example
 
@@ -198,61 +219,101 @@ const deleted = await sqliteDB.delete(userId);
 
 ## Test coverage (what we verify)
 
-- AsyncStorage wrapper: set/get for string, number, boolean, array, JSON; remove; clearAll.
-- Encrypted wrapper (expo-secure-store): set/get for primitives, array, JSON; remove keys; note: clearAll not supported.
-- SQLite CRUD: create, read, update, delete, deleteAll operations with proper data serialization.
+- **AsyncStorage wrapper**: set/get for string, number, boolean, array, JSON; remove; clearAll.
+- **Encrypted wrapper (expo-secure-store)**: set/get for primitives, array, JSON; remove keys; note: clearAll not supported.
+- **MMKV wrapper**: set/get for string, number, boolean, array, JSON; remove; clearAll.
+- **SQLite CRUD**: create, read, update, delete, deleteAll operations with proper data serialization.
+
+### Test Details:
+- **11 tests total** across 4 test suites
+- All storage types have comprehensive unit tests
+- Mocks are provided for all native modules
+- Tests verify data serialization/deserialization
+- Error handling and edge cases are covered
 
 ## Troubleshooting
 
-- Using Expo Go: encrypted storage uses `expo-secure-store` (works in Go). If you switch to `react-native-encrypted-storage`, you must build a dev client or a bare app.
-- SecureStore key rules: keys must be alphanumeric plus `. _ -`. The wrapper normalizes keys (e.g., `user:profile` becomes `user_profile`).
+### Expo Go Limitations:
+- **AsyncStorage**: ✅ Works in Expo Go
+- **Encrypted Storage (expo-secure-store)**: ✅ Works in Expo Go
+- **MMKV**: ❌ Requires Dev Client - shows "MMKV not available. Use a Dev Client (not Expo Go)"
+- **SQLite**: ❌ Requires Dev Client - shows "SQLite not available. Use a Dev Client (not Expo Go)"
+
+### Common Issues:
+- **SecureStore key rules**: keys must be alphanumeric plus `. _ -`. The wrapper normalizes keys (e.g., `user:profile` becomes `user_profile`).
+- **Native module errors**: If you see "Runtime not ready" or "undefined" errors, you're likely in Expo Go. Use a Dev Client for MMKV and SQLite.
+- **Android SDK errors**: For dev builds, ensure Android SDK is properly configured with `ANDROID_HOME` environment variable.
+
+### Development Client Setup:
+1. **For MMKV/SQLite**: Use `npm run android:dev` or `npm run ios:dev`
+2. **For EAS builds**: Use `eas build --profile development`
+3. **For Expo Go**: Stick to AsyncStorage and Encrypted Storage demos
 
 ## Demo UI
 
-Open the app screen to:
-- Enter values for string, number, boolean, and an array (comma separated)
-- Write them to storage
-- Read back the values
-- Remove just the demo keys
-- Clear the entire storage
+The app provides 6 different storage demos accessible from the home screen:
 
-The AsyncStorage demo uses the following keys:
-- `demo:string`
-- `demo:number`
-- `demo:boolean`
-- `demo:array`
-- `demo:json`
+### 1. AsyncStorage Demo
+- Enter values for string, number, boolean, array (comma separated), and JSON
+- Write them to storage, read back values, remove keys, clear storage
+- **Demo keys**: `demo:string`, `demo:number`, `demo:boolean`, `demo:array`, `demo:json`
 
-The Encrypted Storage demo uses the following keys:
-- `enc:string`
-- `enc:number`
-- `enc:boolean`
-- `enc:array`
-- `enc:json`
+### 2. Encrypted Storage Demo
+- Secure storage using expo-secure-store
+- Same data types as AsyncStorage but encrypted
+- **Demo keys**: `enc:string`, `enc:number`, `enc:boolean`, `enc:array`, `enc:json`
 
-The SQLite demo uses a 'users' table with columns:
-- id (auto-increment primary key)
-- name, age, address, isMarried, aboutHim, hisFamily
-- createdAt, updatedAt (timestamps)
+### 3. MMKV Demo
+- High-performance key-value storage
+- Requires Dev Client (shows error message in Expo Go)
+- Same data types with synchronous operations
+
+### 4. Global Secure Storage Demo
+- Uses predefined global keys from `storage/global/keys.ts`
+- Stores user profile data (name, age, address, isMarried, aboutHim, hisFamily)
+- Uses encrypted storage with global key management
+
+### 5. SQLite Demo
+- Full CRUD operations with a 'users' table
+- Create, Read, Update, Delete users with complex data types
+- **Table schema**: id, name, age, address, isMarried, aboutHim, hisFamily, createdAt, updatedAt
+- Requires Dev Client (shows error message in Expo Go)
+
+### 6. Navigation
+- Simple navigation between all demo screens
+- Back buttons to return to home screen
+- Status messages for all operations
 
 ## Project Structure
 
 ```
 storage/
   asyncStorage/
-    index.ts           # Typed helpers
+    index.ts                    # AsyncStorage typed helpers
+    asyncStorageScreen.tsx      # AsyncStorage demo UI
+    index.test.ts              # AsyncStorage unit tests
   encryptedStorage/
-    index.ts           # Encrypted typed helpers
-    EncryptedStorageRN.tsx
+    index.ts                    # Encrypted storage helpers (expo-secure-store)
+    EncryptedStorageRN.tsx      # Encrypted storage demo UI
+    index.test.ts              # Encrypted storage unit tests
   global/
-    keys.ts            # Global key definitions
-    GlobalLocalStorageScreen.tsx
+    keys.ts                     # Global key definitions (KEYS enum)
+    GlobalLocalStorageScreen.tsx # Global secure storage demo UI
   mmkvRC/
-    MMKVReactNativeStorage.tsx # MMKV demo screen
+    MMKVReactNativeStorage.tsx  # MMKV demo screen
+    index.test.ts              # MMKV unit tests
   sQLiteRNStorage/
-    index.ts           # Generic CRUD operations
-    SQLiteRNStorage.tsx # SQLite demo screen
-App.tsx                # Simple UI to test helpers
+    index.ts                    # Generic SQLite CRUD operations
+    SQLiteRNStorage.tsx         # SQLite demo screen
+    index.test.ts              # SQLite unit tests
+__mocks__/
+  @react-native-async-storage/async-storage.ts  # AsyncStorage mock
+  expo-secure-store.ts         # Secure store mock
+  react-native-mmkv.ts         # MMKV mock
+  expo-sqlite.ts              # SQLite mock
+App.tsx                        # Main app with navigation
+package.json                   # Dependencies and scripts
+README.md                      # This documentation
 ```
 
 ## Library Docs

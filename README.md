@@ -29,6 +29,14 @@ npm run ios
 npm run android
 ```
 
+## Run tests
+
+```bash
+npm test
+```
+
+The project uses Jest with `jest-expo`. Async and Encrypted storage are mocked for predictable unit testing.
+
 ## Storage API (Async)
 
 The global storage helpers live at `storage/asyncStorage/index.ts` and are accessible anywhere in the app:
@@ -88,6 +96,16 @@ const prefs = await storage.getJson<{ theme: string }>('prefs:ui');
 await secureStorage.setJson('user:profile', { id: 1, name: 'Alice' });
 const profile = await secureStorage.getJson<{ id: number; name: string }>('user:profile');
 ```
+
+## Test coverage (what we verify)
+
+- AsyncStorage wrapper: set/get for string, number, boolean, array, JSON; remove; clearAll.
+- Encrypted wrapper (expo-secure-store): set/get for primitives, array, JSON; remove keys; note: clearAll not supported.
+
+## Troubleshooting
+
+- Using Expo Go: encrypted storage uses `expo-secure-store` (works in Go). If you switch to `react-native-encrypted-storage`, you must build a dev client or a bare app.
+- SecureStore key rules: keys must be alphanumeric plus `. _ -`. The wrapper normalizes keys (e.g., `user:profile` becomes `user_profile`).
 
 ## Demo UI
 

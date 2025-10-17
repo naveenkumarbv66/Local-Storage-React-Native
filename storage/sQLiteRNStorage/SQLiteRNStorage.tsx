@@ -2,8 +2,11 @@ import React from 'react';
 import { StyleSheet, Text, View, TextInput, Button, Switch, FlatList } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { sqliteDB, DatabaseRecord } from './index';
+import BankCustomerInfo from './bankCustomerInfo';
 
 type Props = { onBack?: () => void };
+
+type Screen = 'users' | 'banks';
 
 interface UserRecord extends DatabaseRecord {
   name: string;
@@ -15,6 +18,7 @@ interface UserRecord extends DatabaseRecord {
 }
 
 export default function SQLiteRNStorage({ onBack }: Props) {
+  const [currentScreen, setCurrentScreen] = React.useState<Screen>('users');
   const [name, setName] = React.useState('');
   const [age, setAge] = React.useState('');
   const [address, setAddress] = React.useState('');
@@ -180,12 +184,19 @@ export default function SQLiteRNStorage({ onBack }: Props) {
     return null;
   };
 
+  if (currentScreen === 'banks') {
+    return <BankCustomerInfo onBack={() => setCurrentScreen('users')} />;
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
       <View style={styles.header}>
         <Text style={styles.title}>SQLite Storage Demo</Text>
-        {onBack ? <Button title="Back" onPress={onBack} /> : null}
+        <View style={styles.headerButtons}>
+          <Button title="Banks" onPress={() => setCurrentScreen('banks')} />
+          {onBack ? <Button title="Back" onPress={onBack} /> : null}
+        </View>
       </View>
       <FlatList
         data={data}
@@ -210,6 +221,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
   },
   title: { fontSize: 20, fontWeight: '600' },
   scroll: { paddingBottom: 40 },

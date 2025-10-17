@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Primitive = string | number | boolean;
+type JsonObject = Record<string, unknown>;
 
 function isPrimitive(value: unknown): value is Primitive {
 	return (
@@ -13,9 +14,12 @@ function isPrimitive(value: unknown): value is Primitive {
 /**
  * Serialize supported values for storage. Arrays are stored as JSON.
  */
-function serialize(value: Primitive | unknown[]): string {
+function serialize(value: Primitive | unknown[] | JsonObject): string {
 	if (Array.isArray(value)) {
 		return JSON.stringify({ __type: 'array', value });
+	}
+	if (value && typeof value === 'object') {
+		return JSON.stringify({ __type: 'object', value });
 	}
 	if (isPrimitive(value)) {
 		return String(value);
@@ -26,12 +30,15 @@ function serialize(value: Primitive | unknown[]): string {
 /**
  * Attempt to parse JSON arrays; otherwise return raw string.
  */
-function deserialize(raw: string | null): string | number | boolean | unknown[] | null {
+function deserialize(raw: string | null): string | number | boolean | unknown[] | JsonObject | null {
 	if (raw == null) return null;
 	try {
 		const parsed = JSON.parse(raw);
 		if (parsed && parsed.__type === 'array') {
 			return Array.isArray(parsed.value) ? parsed.value : [];
+		}
+		if (parsed && parsed.__type === 'object') {
+			return parsed.value && typeof parsed.value === 'object' ? (parsed.value as JsonObject) : {};
 		}
 		// Not our wrapped JSON; try to coerce primitives
 		if (raw === 'true') return true;
@@ -86,6 +93,16 @@ export const storage = {
 	async getArray<T = unknown>(key: string): Promise<T[] | null> {
 		const v = deserialize(await AsyncStorage.getItem(key));
 		return Array.isArray(v) ? (v as T[]) : null;
+	},
+
+	/** Save a JSON object */
+	async setJson<T extends JsonObject = JsonObject>(key: string, value: T): Promise<void> {
+		await AsyncStorage.setItem(key, serialize(value));
+	},
+	/** Get a JSON object (or null) */
+	async getJson<T extends JsonObject = JsonObject>(key: string): Promise<T | null> {
+		const v = deserialize(await AsyncStorage.getItem(key));
+		return v && typeof v === 'object' && !Array.isArray(v) ? (v as T) : null;
 	},
 
 	/** Remove a key */

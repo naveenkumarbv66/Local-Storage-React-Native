@@ -12,11 +12,13 @@ export default function AsyncStorageScreen({ onBack }: Props) {
 	const [numVal, setNumVal] = React.useState('');
 	const [boolVal, setBoolVal] = React.useState(false);
 	const [arrVal, setArrVal] = React.useState('a,b,c');
+	const [jsonVal, setJsonVal] = React.useState('{"hello":"world"}');
 
 	const [readStr, setReadStr] = React.useState<string | null>(null);
 	const [readNum, setReadNum] = React.useState<number | null>(null);
 	const [readBool, setReadBool] = React.useState<boolean | null>(null);
 	const [readArr, setReadArr] = React.useState<string[] | null>(null);
+	const [readJson, setReadJson] = React.useState<Record<string, unknown> | null>(null);
 
 	const writeAll = async () => {
 		await storage.setString('demo:string', strVal);
@@ -30,24 +32,33 @@ export default function AsyncStorageScreen({ onBack }: Props) {
 			.map((s) => s.trim())
 			.filter(Boolean);
 		await storage.setArray('demo:array', arr);
+		try {
+			const obj = JSON.parse(jsonVal);
+			if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+				await storage.setJson('demo:json', obj as Record<string, unknown>);
+			}
+		} catch {}
 	};
 
 	const readAll = async () => {
 		setReadStr(await storage.getString('demo:string'));
 		setReadNum(await storage.getNumber('demo:number'));
 		setReadBool(await storage.getBoolean('demo:boolean'));
-		setReadArr(await storage.getArray('demo:array'));
+	setReadArr(await storage.getArray('demo:array'));
+	setReadJson(await storage.getJson('demo:json'));
 	};
 
 	const removeAll = async () => {
 		await storage.remove('demo:string');
 		await storage.remove('demo:number');
 		await storage.remove('demo:boolean');
-		await storage.remove('demo:array');
+	await storage.remove('demo:array');
+	await storage.remove('demo:json');
 		setReadStr(null);
 		setReadNum(null);
 		setReadBool(null);
 		setReadArr(null);
+		setReadJson(null);
 	};
 
 	const clear = async () => {
@@ -56,6 +67,7 @@ export default function AsyncStorageScreen({ onBack }: Props) {
 		setReadNum(null);
 		setReadBool(null);
 		setReadArr(null);
+		setReadJson(null);
 	};
 
 	return (
@@ -102,6 +114,16 @@ export default function AsyncStorageScreen({ onBack }: Props) {
 					/>
 				</View>
 
+				<View style={styles.block}>
+					<Text style={styles.label}>JSON Object</Text>
+					<TextInput
+						style={styles.input}
+						placeholder='{"hello":"world"}'
+						value={jsonVal}
+						onChangeText={setJsonVal}
+					/>
+				</View>
+
 				<View style={styles.actions}>
 					<Button title="Write" onPress={writeAll} />
 					<Button title="Read" onPress={readAll} />
@@ -117,6 +139,7 @@ export default function AsyncStorageScreen({ onBack }: Props) {
 					<Text>Number: {readNum === null ? 'null' : String(readNum)}</Text>
 					<Text>Boolean: {readBool === null ? 'null' : String(readBool)}</Text>
 					<Text>Array: {readArr === null ? 'null' : `[${readArr.join(', ')}]`}</Text>
+					<Text>JSON: {readJson === null ? 'null' : JSON.stringify(readJson)}</Text>
 				</View>
 			</ScrollView>
 		</View>

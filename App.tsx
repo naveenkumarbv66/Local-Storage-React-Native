@@ -8,9 +8,10 @@ import GlobalLocalStorageScreen from './storage/global/GlobalLocalStorageScreen'
 import SQLiteRNStorage from './storage/sQLiteRNStorage/SQLiteRNStorage';
 import RealmNonSqulScreen from './storage/realm/RealmNonSqulScreen';
 import WatermelonDBScreen from './storage/watermelonDB/WatermelonDBScreen';
+import PouchDBScreen from './storage/pouchDB/PouchDBScreen';
 
 export default function App() {
-  const [route, setRoute] = React.useState<'home' | 'async' | 'encrypted' | 'mmkv' | 'global' | 'sqlite' | 'realm' | 'watermelon'>('home');
+  const [route, setRoute] = React.useState<'home' | 'async' | 'encrypted' | 'mmkv' | 'global' | 'sqlite' | 'realm' | 'watermelon' | 'pouch'>('home');
 
   return (
     <View style={styles.container}>
@@ -22,9 +23,10 @@ export default function App() {
           <Button title="Open Encrypted Storage Demo" onPress={() => setRoute('encrypted')} />
           <Button title="Open MMKV Storage Demo" onPress={() => setRoute('mmkv')} />
           <Button title="Open Global Secure Storage" onPress={() => setRoute('global')} />
-              <Button title="Open SQLite Storage Demo" onPress={() => setRoute('sqlite')} />
-              <Button title="Open Realm NoSQL Demo" onPress={() => setRoute('realm')} />
-              <Button title="Open WatermelonDB Demo" onPress={() => setRoute('watermelon')} />
+          <Button title="Open SQLite Storage Demo" onPress={() => setRoute('sqlite')} />
+          <Button title="Open Realm NoSQL Demo" onPress={() => setRoute('realm')} />
+          <Button title="Open WatermelonDB Demo" onPress={() => setRoute('watermelon')} />
+          <Button title="Open PouchDB Demo" onPress={() => setRoute('pouch')} />
         </View>
       )}
       {route === 'async' && <AsyncStorageScreen onBack={() => setRoute('home')} />}
@@ -34,6 +36,7 @@ export default function App() {
       {route === 'sqlite' && <SQLiteRNStorage onBack={() => setRoute('home')} />}
       {route === 'realm' && <RealmNonSqulScreen onBack={() => setRoute('home')} />}
       {route === 'watermelon' && <WatermelonDBScreen onBack={() => setRoute('home')} />}
+      {route === 'pouch' && <PouchDBScreen onBack={() => setRoute('home')} />}
     </View>
   );
 }

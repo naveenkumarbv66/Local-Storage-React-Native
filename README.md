@@ -4,7 +4,7 @@ A comprehensive collection of local storage implementations for React Native app
 
 ## 🚀 **Features**
 
-This project includes **8 different storage solutions**:
+This project includes **9 different storage solutions**:
 
 - **AsyncStorage** (`storage/asyncStorage`) - React Native's built-in key-value storage
 - **Encrypted Storage** (`storage/encryptedStorage`) - Secure storage using expo-secure-store
@@ -12,8 +12,9 @@ This project includes **8 different storage solutions**:
 - **SQLite** (`storage/sQLiteRNStorage`) - Relational database with CRUD operations
 - **Realm** (`storage/realm`) - Object-oriented NoSQL database
 - **WatermelonDB** (`storage/watermelonDB`) - Reactive database with SQLite backend
+- **PouchDB** (`storage/pouchDB`) - Document-based NoSQL database with sync capabilities
 - **Global Secure Storage** (`storage/global`) - Predefined keys with encrypted storage
-- **Bank Management** - SQLite, Realm, and WatermelonDB implementations with foreign key relationships
+- **Bank Management** - SQLite, Realm, WatermelonDB, and PouchDB implementations with foreign key relationships
 
 ## 📱 **Demo App**
 
@@ -50,11 +51,12 @@ npm install react-native-mmkv
 npm install expo-sqlite
 npm install realm
 npm install @nozbe/watermelondb
+npm install pouchdb-core pouchdb-adapter-asyncstorage pouchdb-mapreduce pouchdb-find
 ```
 
 ### **Development Setup**
 - **Expo Go**: No native linking required for AsyncStorage and Encrypted Storage
-- **Dev Client**: Required for MMKV, SQLite, Realm, and WatermelonDB (native modules)
+- **Dev Client**: Required for MMKV, SQLite, Realm, WatermelonDB, and PouchDB (native modules)
 - **Bare React Native**: Follow individual library documentation for linking
 
 ### **⚠️ Important: Native Module Limitations**
@@ -63,8 +65,15 @@ Some storage solutions require native modules and **will show "Runtime not ready
 - **SQLite**: Shows "SQLite not available. Use a Dev Client (not Expo Go)"
 - **MMKV**: Shows "MMKV not available. Use a Dev Client (not Expo Go)"
 - **WatermelonDB**: Shows "WatermelonDB not available. Use a Dev Client (not Expo Go)"
+- **PouchDB**: Shows "PouchDB not available. Use a Dev Client (not Expo Go)" or "Invalid adapter" error
 
 **This is expected behavior!** Use a Development Client to access these features.
+
+### **PouchDB Adapter Issues**
+If you see "Invalid adapter" or "PouchDB initialization failed" errors:
+- **Expo Go**: Automatically falls back to mock implementation (fully functional for testing)
+- **Dev Client**: Ensure proper native module linking
+- **Bare React Native**: Follow PouchDB installation guide for your platform
 
 ## 🚀 **Running the App**
 
@@ -110,7 +119,7 @@ npm test -- --coverage
 ```
 
 ### **Test Coverage**
-- **38 tests** across **6 test suites**
+- **59 tests** across **7 test suites**
 - **100% coverage** for all storage implementations
 - **Mocked dependencies** for reliable testing
 - **Jest + jest-expo** testing framework
@@ -128,6 +137,7 @@ Some storage solutions require native modules and **will NOT work in Expo Go**:
 | **SQLite** | ❌ Not Available | ✅ Works | Native module required |
 | **Realm** | ❌ Not Available | ✅ Works | Native module required |
 | **WatermelonDB** | ❌ Not Available | ✅ Works | Native module required |
+| **PouchDB** | ❌ Not Available | ✅ Works | Native module required |
 
 ### **Development Client Setup**
 
@@ -158,7 +168,7 @@ expo start
 If you must stay on Expo Go, use:
 - ✅ **AsyncStorage** for basic key-value storage
 - ✅ **Encrypted Storage** for secure data storage
-- ❌ **MMKV/SQLite/Realm/WatermelonDB** will show "not available" messages
+- ❌ **MMKV/SQLite/Realm/WatermelonDB/PouchDB** will show "not available" messages
 
 ## 📚 **Storage APIs**
 
@@ -172,6 +182,7 @@ If you must stay on Expo Go, use:
 | **SQLite** | Relational | Complex queries, relationships | ❌ | ✅ |
 | **Realm** | Object-Oriented | Complex objects, real-time | ❌ | ✅ |
 | **WatermelonDB** | Reactive | Reactive queries, SQLite backend | ❌ | ✅ |
+| **PouchDB** | Document | Document-based NoSQL, sync capabilities | ❌ | ✅ |
 
 ## 🛠️ **Scripts Overview**
 
@@ -286,7 +297,57 @@ await bankRealm.readByFilter('userID == $0', userId): Promise<Bank[]>
 - ✅ **Real-time updates** capability
 - ✅ **TypeScript schemas** with full type safety
 
-### **5. WatermelonDB API**
+### **5. PouchDB API**
+
+```typescript
+import { userPouch, bankPouch, initDatabase } from './storage/pouchDB';
+
+// Initialize database
+await initDatabase();
+
+// Create user
+const userId = await userPouch.instance.create({
+  type: 'user',
+  name: 'John',
+  age: 30,
+  address: '123 Main St',
+  isMarried: true,
+  aboutHim: JSON.stringify({ bio: 'Developer' }),
+  hisFamily: JSON.stringify(['Alice', 'Bob']),
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
+
+// Read all users
+const users = await userPouch.instance.readAll();
+
+// Read user by ID
+const user = await userPouch.instance.readById(userId);
+
+// Update user
+await userPouch.instance.update(userId, {
+  name: 'Jane',
+  age: 31,
+});
+
+// Delete user
+await userPouch.instance.delete(userId);
+
+// Create bank for user
+const bankId = await bankPouch.instance.create({
+  type: 'bank',
+  bankName: 'Chase Bank',
+  bankId: 'CHASE001',
+  userId: userId,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
+
+// Read banks by user
+const userBanks = await bankPouch.instance.readByFilter({ userId });
+```
+
+### **6. WatermelonDB API**
 **Location**: `storage/watermelonDB/index.ts`  
 **Backend**: `@nozbe/watermelondb` (Dev Client required)
 
@@ -416,7 +477,7 @@ const userBanks = await bankWatermelon.readByFilter('user_id', userId);
 ## 🧪 **Test Coverage**
 
 ### **Comprehensive Testing Suite**
-- **38 tests** across **6 test suites**
+- **59 tests** across **7 test suites**
 - **100% coverage** for all storage implementations
 - **Mocked dependencies** for reliable testing
 
@@ -430,6 +491,7 @@ const userBanks = await bankWatermelon.readByFilter('user_id', userId);
 | **SQLite** | ✅ CRUD operations + relationships | ✅ Mocked |
 | **Realm** | ✅ CRUD operations + relationships | ✅ Mocked |
 | **WatermelonDB** | ✅ Data conversion functions | ✅ Mocked |
+| **PouchDB** | ✅ CRUD operations + document queries | ✅ Mocked |
 
 ### **Test Categories**
 - **Basic Operations**: set/get/remove/clear for all data types
@@ -546,13 +608,19 @@ The app provides **8 interactive storage demos** accessible from the home screen
 - **Operations**: Full CRUD with object relationships
 - **Compatibility**: ❌ Expo Go, ✅ Dev Client
 
-### **7. WatermelonDB Demo** 🍉
+### **7. PouchDB Demo** 📄
+- **Features**: Document-based NoSQL database with sync capabilities
+- **Schemas**: User and Bank documents with relationships
+- **Operations**: Full CRUD with document queries
+- **Compatibility**: ❌ Expo Go, ✅ Dev Client
+
+### **8. WatermelonDB Demo** 🍉
 - **Features**: Reactive database with SQLite backend
 - **Schemas**: User and Bank models with relationships
 - **Operations**: Full CRUD with reactive queries
 - **Compatibility**: ❌ Expo Go, ✅ Dev Client
 
-### **8. Navigation** 🧭
+### **9. Navigation** 🧭
 - **Features**: Simple navigation between all demo screens
 - **UI**: Back buttons, status messages, error handling
 - **Compatibility**: ✅ All environments
@@ -590,6 +658,11 @@ storage/
     index.ts                    # Generic CRUD operations
     WatermelonDBScreen.tsx      # Demo screen
     dataConversion.test.ts     # Unit tests
+  pouchDB/
+    schemas.ts                  # Document schemas
+    index.ts                    # Generic CRUD operations
+    PouchDBScreen.tsx          # Demo screen
+    index.test.ts              # Unit tests
 __mocks__/
   @react-native-async-storage/async-storage.ts  # AsyncStorage mock
   expo-secure-store.ts         # Secure store mock
@@ -597,6 +670,10 @@ __mocks__/
   expo-sqlite.ts              # SQLite mock
   realm.ts                    # Realm mock
   @nozbe/watermelondb.ts      # WatermelonDB mock
+  pouchdb-core.ts             # PouchDB mock
+  pouchdb-adapter-asyncstorage.ts  # PouchDB adapter mock
+  pouchdb-mapreduce.ts        # PouchDB mapreduce mock
+  pouchdb-find.ts             # PouchDB find mock
 App.tsx                        # Main app with navigation
 package.json                   # Dependencies and scripts
 README.md                      # This documentation
@@ -607,16 +684,16 @@ README.md                      # This documentation
 This project provides a **comprehensive collection of local storage solutions** for React Native applications:
 
 ### **✅ What's Included**
-- **8 storage implementations** with consistent APIs
+- **9 storage implementations** with consistent APIs
 - **Interactive demo screens** for testing all features
-- **Complete test coverage** (38 tests across 6 suites)
+- **Complete test coverage** (59 tests across 7 suites)
 - **TypeScript support** with full type safety
 - **Error handling** and graceful degradation
 - **Documentation** with usage examples
 
 ### **🚀 Ready to Use**
 - **Expo Go compatible**: AsyncStorage, Encrypted Storage, Global Storage
-- **Dev Client required**: MMKV, SQLite, Realm, WatermelonDB
+- **Dev Client required**: MMKV, SQLite, Realm, WatermelonDB, PouchDB
 - **Production ready**: All implementations include proper error handling
 - **Well tested**: Comprehensive unit tests with mocked dependencies
 
@@ -626,6 +703,7 @@ Perfect for understanding different storage approaches in React Native:
 - **Relational Database**: SQLite with CRUD operations
 - **Object-Oriented Database**: Realm with relationships
 - **Reactive Database**: WatermelonDB with reactive queries
+- **Document Database**: PouchDB with sync capabilities
 - **Global Key Management**: Predefined keys with secure storage
 
 **Start exploring by running `npm run start` and navigating through the demo screens!** 🎉
@@ -638,5 +716,6 @@ Perfect for understanding different storage approaches in React Native:
 - SQLite (Expo): `https://docs.expo.dev/versions/latest/sdk/sqlite/`
 - Realm: `https://docs.mongodb.com/realm/sdk/react-native/`
 - WatermelonDB: `https://watermelondb.dev/`
+- PouchDB: `https://pouchdb.com/`
 
 

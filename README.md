@@ -1,8 +1,9 @@
 # Local Storage (AsyncStorage + Encrypted Storage) for React Native
 
 This project includes:
-- A global AsyncStorage wrapper (`storage/asyncStorage`) for string, number, boolean, array.
+- A global AsyncStorage wrapper (`storage/asyncStorage`) for string, number, boolean, array, JSON.
 - A global Encrypted Storage wrapper (`storage/encryptedStorage`) for string, number, boolean, array, and JSON object.
+- An MMKV example screen (`storage/mmkvRC/MMKVReactNativeStorage.tsx`) for string, number, boolean, array, JSON.
 Simple test UIs are provided and accessible from the home screen.
 
 ## Prerequisites
@@ -16,6 +17,7 @@ Simple test UIs are provided and accessible from the home screen.
 npm install
 npm install @react-native-async-storage/async-storage
 npm install expo-secure-store
+npm install react-native-mmkv
 ```
 
 If you're using Expo, no native linking is required. For bare React Native, follow the library docs.
@@ -25,8 +27,8 @@ If you're using Expo, no native linking is required. For bare React Native, foll
 ```bash
 npm run start
 # or
-npm run ios
-npm run android
+npm run ios      # opens in Expo Go
+npm run android  # opens in Expo Go
 ```
 
 ## Run tests
@@ -36,6 +38,41 @@ npm test
 ```
 
 The project uses Jest with `jest-expo`. Async and Encrypted storage are mocked for predictable unit testing.
+
+## Using MMKV (requires Dev Client)
+
+MMKV is a native module and will NOT work in Expo Go. You need a development client or a bare build.
+
+- Local dev client (Expo Run):
+
+```bash
+# iOS (requires Xcode)
+npm run ios:dev
+
+# Android (requires Android SDK/Emulator)
+npm run android:dev
+```
+
+- EAS development build:
+
+```bash
+# iOS dev build
+eas build --profile development --platform ios
+
+# Android dev build
+eas build --profile development --platform android
+
+# After installing the dev client on the device/emulator
+expo start
+# Then open the project with the installed development client
+```
+
+- If you must stay on Expo Go: Use the AsyncStorage or Encrypted Storage (expo-secure-store) demos. MMKV will show "MMKV not available. Use a Dev Client (not Expo Go)" until you run a dev client.
+
+## Scripts overview
+
+- `npm run android` / `npm run ios`: Launch in Expo Go (works with AsyncStorage and Secure Store demos)
+- `npm run android:dev` / `npm run ios:dev`: Build and launch a native development client (required for MMKV)
 
 ## Storage API (Async)
 
@@ -140,11 +177,14 @@ storage/
     index.ts           # Encrypted typed helpers
     EncryptedStorageRN.tsx
 App.tsx                # Simple UI to test helpers
+storage/mmkvRC/
+  MMKVReactNativeStorage.tsx # MMKV demo screen
 ```
 
 ## Library Docs
 
 - AsyncStorage: `https://github.com/react-native-async-storage/async-storage`
 - Encrypted Storage (Expo Secure Store): `https://docs.expo.dev/versions/latest/sdk/securestore/`
+- MMKV: `https://github.com/mrousavy/react-native-mmkv`
 
 

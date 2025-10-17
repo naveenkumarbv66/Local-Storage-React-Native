@@ -6,9 +6,10 @@ import EncryptedStorageRN from './storage/encryptedStorage/EncryptedStorageRN';
 import MMKVReactNativeStorage from './storage/mmkvRC/MMKVReactNativeStorage';
 import GlobalLocalStorageScreen from './storage/global/GlobalLocalStorageScreen';
 import SQLiteRNStorage from './storage/sQLiteRNStorage/SQLiteRNStorage';
+import RealmNonSqulScreen from './storage/realm/RealmNonSqulScreen';
 
 export default function App() {
-  const [route, setRoute] = React.useState<'home' | 'async' | 'encrypted' | 'mmkv' | 'global' | 'sqlite'>('home');
+  const [route, setRoute] = React.useState<'home' | 'async' | 'encrypted' | 'mmkv' | 'global' | 'sqlite' | 'realm'>('home');
 
   return (
     <View style={styles.container}>
@@ -21,6 +22,7 @@ export default function App() {
           <Button title="Open MMKV Storage Demo" onPress={() => setRoute('mmkv')} />
           <Button title="Open Global Secure Storage" onPress={() => setRoute('global')} />
           <Button title="Open SQLite Storage Demo" onPress={() => setRoute('sqlite')} />
+          <Button title="Open Realm NoSQL Demo" onPress={() => setRoute('realm')} />
         </View>
       )}
       {route === 'async' && <AsyncStorageScreen onBack={() => setRoute('home')} />}
@@ -28,6 +30,7 @@ export default function App() {
       {route === 'mmkv' && <MMKVReactNativeStorage onBack={() => setRoute('home')} />}
       {route === 'global' && <GlobalLocalStorageScreen onBack={() => setRoute('home')} />}
       {route === 'sqlite' && <SQLiteRNStorage onBack={() => setRoute('home')} />}
+      {route === 'realm' && <RealmNonSqulScreen onBack={() => setRoute('home')} />}
     </View>
   );
 }

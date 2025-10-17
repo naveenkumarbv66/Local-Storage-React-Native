@@ -72,10 +72,40 @@ expo start
 
 - If you must stay on Expo Go: Use the AsyncStorage or Encrypted Storage (expo-secure-store) demos. MMKV will show "MMKV not available. Use a Dev Client (not Expo Go)" until you run a dev client.
 
+## Using SQLite (requires Dev Client)
+
+SQLite is a native module and will NOT work in Expo Go. You need a development client or a bare build.
+
+- Local dev client (Expo Run):
+
+```bash
+# iOS (requires Xcode)
+npm run ios:dev
+
+# Android (requires Android SDK/Emulator)
+npm run android:dev
+```
+
+- EAS development build:
+
+```bash
+# iOS dev build
+eas build --profile development --platform ios
+
+# Android dev build
+eas build --profile development --platform android
+
+# After installing the dev client on the device/emulator
+expo start
+# Then open the project with the installed development client
+```
+
+- If you must stay on Expo Go: Use the AsyncStorage or Encrypted Storage (expo-secure-store) demos. SQLite will show "SQLite not available. Use a Dev Client (not Expo Go)" until you run a dev client.
+
 ## Scripts overview
 
 - `npm run android` / `npm run ios`: Launch in Expo Go (works with AsyncStorage and Secure Store demos)
-- `npm run android:dev` / `npm run ios:dev`: Build and launch a native development client (required for MMKV)
+- `npm run android:dev` / `npm run ios:dev`: Build and launch a native development client (required for MMKV and SQLite)
 
 ## Storage API (Async)
 

@@ -4,15 +4,16 @@ A comprehensive collection of local storage implementations for React Native app
 
 ## 🚀 **Features**
 
-This project includes **7 different storage solutions**:
+This project includes **8 different storage solutions**:
 
 - **AsyncStorage** (`storage/asyncStorage`) - React Native's built-in key-value storage
 - **Encrypted Storage** (`storage/encryptedStorage`) - Secure storage using expo-secure-store
 - **MMKV** (`storage/mmkvRC`) - High-performance key-value storage
 - **SQLite** (`storage/sQLiteRNStorage`) - Relational database with CRUD operations
 - **Realm** (`storage/realm`) - Object-oriented NoSQL database
+- **WatermelonDB** (`storage/watermelonDB`) - Reactive database with SQLite backend
 - **Global Secure Storage** (`storage/global`) - Predefined keys with encrypted storage
-- **Bank Management** - SQLite and Realm implementations with foreign key relationships
+- **Bank Management** - SQLite, Realm, and WatermelonDB implementations with foreign key relationships
 
 ## 📱 **Demo App**
 
@@ -48,11 +49,12 @@ npm install expo-secure-store
 npm install react-native-mmkv
 npm install expo-sqlite
 npm install realm
+npm install @nozbe/watermelondb
 ```
 
 ### **Development Setup**
 - **Expo Go**: No native linking required for AsyncStorage and Encrypted Storage
-- **Dev Client**: Required for MMKV, SQLite, and Realm (native modules)
+- **Dev Client**: Required for MMKV, SQLite, Realm, and WatermelonDB (native modules)
 - **Bare React Native**: Follow individual library documentation for linking
 
 ### **⚠️ Important: Native Module Limitations**
@@ -60,6 +62,7 @@ Some storage solutions require native modules and **will show "Runtime not ready
 - **Realm**: Shows "Expo GO does not contain the native module for realm package"
 - **SQLite**: Shows "SQLite not available. Use a Dev Client (not Expo Go)"
 - **MMKV**: Shows "MMKV not available. Use a Dev Client (not Expo Go)"
+- **WatermelonDB**: Shows "WatermelonDB not available. Use a Dev Client (not Expo Go)"
 
 **This is expected behavior!** Use a Development Client to access these features.
 
@@ -107,7 +110,7 @@ npm test -- --coverage
 ```
 
 ### **Test Coverage**
-- **30 tests** across **5 test suites**
+- **38 tests** across **6 test suites**
 - **100% coverage** for all storage implementations
 - **Mocked dependencies** for reliable testing
 - **Jest + jest-expo** testing framework
@@ -124,6 +127,7 @@ Some storage solutions require native modules and **will NOT work in Expo Go**:
 | **MMKV** | ❌ Not Available | ✅ Works | Native module required |
 | **SQLite** | ❌ Not Available | ✅ Works | Native module required |
 | **Realm** | ❌ Not Available | ✅ Works | Native module required |
+| **WatermelonDB** | ❌ Not Available | ✅ Works | Native module required |
 
 ### **Development Client Setup**
 
@@ -154,7 +158,7 @@ expo start
 If you must stay on Expo Go, use:
 - ✅ **AsyncStorage** for basic key-value storage
 - ✅ **Encrypted Storage** for secure data storage
-- ❌ **MMKV/SQLite/Realm** will show "not available" messages
+- ❌ **MMKV/SQLite/Realm/WatermelonDB** will show "not available" messages
 
 ## 📚 **Storage APIs**
 
@@ -167,6 +171,7 @@ If you must stay on Expo Go, use:
 | **MMKV** | Key-Value | High performance, sync ops | ❌ | ✅ |
 | **SQLite** | Relational | Complex queries, relationships | ❌ | ✅ |
 | **Realm** | Object-Oriented | Complex objects, real-time | ❌ | ✅ |
+| **WatermelonDB** | Reactive | Reactive queries, SQLite backend | ❌ | ✅ |
 
 ## 🛠️ **Scripts Overview**
 
@@ -281,6 +286,36 @@ await bankRealm.readByFilter('userID == $0', userId): Promise<Bank[]>
 - ✅ **Real-time updates** capability
 - ✅ **TypeScript schemas** with full type safety
 
+### **5. WatermelonDB API**
+**Location**: `storage/watermelonDB/index.ts`  
+**Backend**: `@nozbe/watermelondb` (Dev Client required)
+
+```typescript
+// Initialize database
+await initDatabase(): Promise<Database>
+
+// Generic CRUD operations
+await userWatermelon.create(data: Partial<User>): Promise<string>
+await userWatermelon.readAll(): Promise<User[]>
+await userWatermelon.readById(id: string): Promise<User | null>
+await userWatermelon.readByFilter(column: string, value: any): Promise<User[]>
+await userWatermelon.update(id: string, data: Partial<User>): Promise<boolean>
+await userWatermelon.delete(id: string): Promise<boolean>
+await userWatermelon.deleteAll(): Promise<boolean>
+
+// Bank operations with relationships
+await bankWatermelon.create(data: Partial<Bank>): Promise<string>
+await bankWatermelon.readByFilter('user_id', userId): Promise<Bank[]>
+```
+
+**Features**:
+- ✅ **Reactive database** with SQLite backend
+- ✅ **Model decorators** for type safety
+- ✅ **Relationship support** (User ↔ Bank)
+- ✅ **Reactive queries** for real-time updates
+- ✅ **Schema migrations** support
+- ✅ **High performance** with lazy loading
+
 ## 💡 **Usage Examples**
 
 ### **Basic Key-Value Storage**
@@ -350,10 +385,38 @@ const bankId = await bankRealm.create(convertBankData({
 const userBanks = await bankRealm.readByFilter('userID == $0', new Realm.BSON.ObjectId(userId));
 ```
 
+### **Reactive Database (WatermelonDB)**
+```typescript
+import { userWatermelon, bankWatermelon, initDatabase, convertUserData, convertBankData } from './storage/watermelonDB';
+
+// Initialize database
+await initDatabase();
+
+// Create user with reactive model
+const userId = await userWatermelon.create(convertUserData({
+  name: 'John Doe',
+  age: 30,
+  address: '123 Main St',
+  isMarried: true,
+  aboutHim: { bio: 'Developer' },
+  hisFamily: ['Alice', 'Bob'],
+}));
+
+// Create bank with relationship
+const bankId = await bankWatermelon.create(convertBankData({
+  bankName: 'Chase Bank',
+  bankId: 'CHASE001',
+  userId: userId,
+}));
+
+// Query with reactive filters
+const userBanks = await bankWatermelon.readByFilter('user_id', userId);
+```
+
 ## 🧪 **Test Coverage**
 
 ### **Comprehensive Testing Suite**
-- **30 tests** across **5 test suites**
+- **38 tests** across **6 test suites**
 - **100% coverage** for all storage implementations
 - **Mocked dependencies** for reliable testing
 
@@ -366,6 +429,7 @@ const userBanks = await bankRealm.readByFilter('userID == $0', new Realm.BSON.Ob
 | **MMKV** | ✅ All operations (set/get/remove/clear) | ✅ Mocked |
 | **SQLite** | ✅ CRUD operations + relationships | ✅ Mocked |
 | **Realm** | ✅ CRUD operations + relationships | ✅ Mocked |
+| **WatermelonDB** | ✅ Data conversion functions | ✅ Mocked |
 
 ### **Test Categories**
 - **Basic Operations**: set/get/remove/clear for all data types
@@ -443,7 +507,7 @@ While setting up dev client, test these in Expo Go:
 
 ## 📱 **Demo UI Overview**
 
-The app provides **7 interactive storage demos** accessible from the home screen:
+The app provides **8 interactive storage demos** accessible from the home screen:
 
 ### **1. AsyncStorage Demo** 📦
 - **Features**: String, number, boolean, array, JSON operations
@@ -482,7 +546,13 @@ The app provides **7 interactive storage demos** accessible from the home screen
 - **Operations**: Full CRUD with object relationships
 - **Compatibility**: ❌ Expo Go, ✅ Dev Client
 
-### **7. Navigation** 🧭
+### **7. WatermelonDB Demo** 🍉
+- **Features**: Reactive database with SQLite backend
+- **Schemas**: User and Bank models with relationships
+- **Operations**: Full CRUD with reactive queries
+- **Compatibility**: ❌ Expo Go, ✅ Dev Client
+
+### **8. Navigation** 🧭
 - **Features**: Simple navigation between all demo screens
 - **UI**: Back buttons, status messages, error handling
 - **Compatibility**: ✅ All environments
@@ -514,12 +584,19 @@ storage/
     index.ts                    # Generic Realm CRUD operations
     RealmNonSqulScreen.tsx     # Realm demo screen
     index.test.ts              # Realm unit tests
+  watermelonDB/
+    schemas.ts                  # Database schemas
+    models.ts                   # Model definitions
+    index.ts                    # Generic CRUD operations
+    WatermelonDBScreen.tsx      # Demo screen
+    dataConversion.test.ts     # Unit tests
 __mocks__/
   @react-native-async-storage/async-storage.ts  # AsyncStorage mock
   expo-secure-store.ts         # Secure store mock
   react-native-mmkv.ts         # MMKV mock
   expo-sqlite.ts              # SQLite mock
   realm.ts                    # Realm mock
+  @nozbe/watermelondb.ts      # WatermelonDB mock
 App.tsx                        # Main app with navigation
 package.json                   # Dependencies and scripts
 README.md                      # This documentation
@@ -530,16 +607,16 @@ README.md                      # This documentation
 This project provides a **comprehensive collection of local storage solutions** for React Native applications:
 
 ### **✅ What's Included**
-- **7 storage implementations** with consistent APIs
+- **8 storage implementations** with consistent APIs
 - **Interactive demo screens** for testing all features
-- **Complete test coverage** (30 tests across 5 suites)
+- **Complete test coverage** (38 tests across 6 suites)
 - **TypeScript support** with full type safety
 - **Error handling** and graceful degradation
 - **Documentation** with usage examples
 
 ### **🚀 Ready to Use**
 - **Expo Go compatible**: AsyncStorage, Encrypted Storage, Global Storage
-- **Dev Client required**: MMKV, SQLite, Realm
+- **Dev Client required**: MMKV, SQLite, Realm, WatermelonDB
 - **Production ready**: All implementations include proper error handling
 - **Well tested**: Comprehensive unit tests with mocked dependencies
 
@@ -548,6 +625,7 @@ Perfect for understanding different storage approaches in React Native:
 - **Key-Value Storage**: AsyncStorage, Encrypted Storage, MMKV
 - **Relational Database**: SQLite with CRUD operations
 - **Object-Oriented Database**: Realm with relationships
+- **Reactive Database**: WatermelonDB with reactive queries
 - **Global Key Management**: Predefined keys with secure storage
 
 **Start exploring by running `npm run start` and navigating through the demo screens!** 🎉
@@ -559,5 +637,6 @@ Perfect for understanding different storage approaches in React Native:
 - MMKV: `https://github.com/mrousavy/react-native-mmkv`
 - SQLite (Expo): `https://docs.expo.dev/versions/latest/sdk/sqlite/`
 - Realm: `https://docs.mongodb.com/realm/sdk/react-native/`
+- WatermelonDB: `https://watermelondb.dev/`
 
 

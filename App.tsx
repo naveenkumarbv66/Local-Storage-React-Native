@@ -7,9 +7,10 @@ import MMKVReactNativeStorage from './storage/mmkvRC/MMKVReactNativeStorage';
 import GlobalLocalStorageScreen from './storage/global/GlobalLocalStorageScreen';
 import SQLiteRNStorage from './storage/sQLiteRNStorage/SQLiteRNStorage';
 import RealmNonSqulScreen from './storage/realm/RealmNonSqulScreen';
+import WatermelonDBScreen from './storage/watermelonDB/WatermelonDBScreen';
 
 export default function App() {
-  const [route, setRoute] = React.useState<'home' | 'async' | 'encrypted' | 'mmkv' | 'global' | 'sqlite' | 'realm'>('home');
+  const [route, setRoute] = React.useState<'home' | 'async' | 'encrypted' | 'mmkv' | 'global' | 'sqlite' | 'realm' | 'watermelon'>('home');
 
   return (
     <View style={styles.container}>
@@ -21,8 +22,9 @@ export default function App() {
           <Button title="Open Encrypted Storage Demo" onPress={() => setRoute('encrypted')} />
           <Button title="Open MMKV Storage Demo" onPress={() => setRoute('mmkv')} />
           <Button title="Open Global Secure Storage" onPress={() => setRoute('global')} />
-          <Button title="Open SQLite Storage Demo" onPress={() => setRoute('sqlite')} />
-          <Button title="Open Realm NoSQL Demo" onPress={() => setRoute('realm')} />
+              <Button title="Open SQLite Storage Demo" onPress={() => setRoute('sqlite')} />
+              <Button title="Open Realm NoSQL Demo" onPress={() => setRoute('realm')} />
+              <Button title="Open WatermelonDB Demo" onPress={() => setRoute('watermelon')} />
         </View>
       )}
       {route === 'async' && <AsyncStorageScreen onBack={() => setRoute('home')} />}
@@ -31,6 +33,7 @@ export default function App() {
       {route === 'global' && <GlobalLocalStorageScreen onBack={() => setRoute('home')} />}
       {route === 'sqlite' && <SQLiteRNStorage onBack={() => setRoute('home')} />}
       {route === 'realm' && <RealmNonSqulScreen onBack={() => setRoute('home')} />}
+      {route === 'watermelon' && <WatermelonDBScreen onBack={() => setRoute('home')} />}
     </View>
   );
 }
